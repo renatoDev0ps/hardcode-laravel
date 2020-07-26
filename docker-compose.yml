@@ -1,0 +1,44 @@
+version: '3'
+services:
+  laravel:
+    build: .
+    container_name: laravel
+    hostname: laravel
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    container_name: postgres
+    hostname: postgres
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.docker/dbdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASS}
+
+  nginx:
+    container_name: nginx
+    hostname: nginx
+    build: ./.docker/nginx
+    restart: always
+    ports:
+      - 8001:80
+    volumes:
+      - ./:/var/www
+    depends_on:
+      - laravel
+
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis:alpine
+    expose:
+      - 6379
